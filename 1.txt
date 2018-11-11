@@ -1,0 +1,1235 @@
+import java.io.*;
+import java.util.*;
+
+
+class R{
+	String reg;
+	int value;
+
+	R(String reg, int value){
+		this.reg=reg;
+		this.value=value;
+	}
+
+	public String get_reg(){
+		return reg;
+	}
+
+	public int get_value(){
+		return value;
+	}
+
+}
+
+
+
+
+class Instruction 
+{
+	public String instr_string;
+	public int program_counter;
+	public String cat;
+	public String opcode;
+	public String source1;
+	public String source2;
+	public String dest;
+	public int imm_value; 
+	public String operation;
+	public int rt;
+	public int rs;
+	public String ne4;
+	public int target; 
+
+	public Instruction(String instr_string, int program_counter)
+	{
+
+		this.instr_string = instr_string;
+		this.program_counter = program_counter;
+		this.cat = instr_string.substring(0,3);
+		this.opcode = instr_string.substring(3,6);
+	} 
+
+	public void Ca1()
+	{
+		if(this.operation == null)
+			this.cat = "one";
+		else 
+		{
+			if (this.operation.contains("J"))
+			{
+				this.imm_value = Integer.parseInt(this.instr_string.substring(6,32),2);
+				this.imm_value = imm_value*4; //shift left by 2 same as multiplying by 4
+
+
+			}
+			
+			else if (this.operation == "BEQ")
+			{
+				//if rs = rt then branch
+				this.source1 = "R"+Integer.parseInt(this.instr_string.substring(6,11),2);
+				this.source2 = "R"+Integer.parseInt(this.instr_string.substring(11,16),2);
+				this.imm_value = Integer.parseInt(this.instr_string.substring(16,32),2);
+				this.imm_value = imm_value*4;
+			}
+			
+			else if (this.operation == "BNE")
+			{
+				
+				this.source1 = "R"+Integer.parseInt(this.instr_string.substring(6,11),2);
+				this.source2 = "R"+Integer.parseInt(this.instr_string.substring(11,16),2);
+				this.imm_value = 4*Integer.parseInt(this.instr_string.substring(16,32),2);
+			}
+			
+			else if (this.operation == "BGTZ")
+			{
+			// : if rs > 0 then branch
+				this.source1 = "R"+Integer.parseInt(this.instr_string.substring(6,11),2);
+				this.source2 = "R"+Integer.parseInt(this.instr_string.substring(11,16),2); //should come out to be zero 
+				this.imm_value = 4*Integer.parseInt(this.instr_string.substring(16,32),2);
+				
+			}
+			
+			else if (this.operation == "SW")
+			{
+				//memory[base+offset] = rt
+				this.source1 = "R"+Integer.parseInt(this.instr_string.substring(6,11),2);//base
+				this.source2 = "R"+Integer.parseInt(this.instr_string.substring(11,16),2); //rt
+				this.imm_value = Integer.parseInt(this.instr_string.substring(16,32),2); //offset
+				
+			}
+			
+			else if (this.operation == "LW")
+			{
+				//rt = memory[base+offset]
+				this.source1 = "R"+Integer.parseInt(this.instr_string.substring(6,11),2);//base
+				this.source2 = "R"+Integer.parseInt(this.instr_string.substring(11,16),2); //rt
+				this.imm_value = Integer.parseInt(this.instr_string.substring(16,32),2); //offset
+				
+			}
+			
+			else if (this.operation == "BREAK")
+			{
+				
+			}
+		}
+	}
+
+
+	public void Ca2()
+	{
+		this.cat = "two";
+		this.dest = "R"+Integer.parseInt(this.instr_string.substring(6,11),2);
+		this.source1 = "R"+Integer.parseInt(this.instr_string.substring(11,16),2);
+		this.source2 = "R"+Integer.parseInt(this.instr_string.substring(16,21),2);
+	}
+
+	public void Ca3()
+	{
+		this.cat = "three";
+		this.dest = "R"+Integer.parseInt(this.instr_string.substring(6,11),2);
+		this.source1 = "R"+Integer.parseInt(this.instr_string.substring(11,16),2);
+		this.imm_value = Integer.parseInt(this.instr_string.substring(16,32),2);
+	}
+
+	public void Ca4() 
+	{
+		this.cat = "four";
+		this.source1 = "R"+Integer.parseInt(this.instr_string.substring(6,11),2);
+		this.source2 = "R"+Integer.parseInt(this.instr_string.substring(11,16),2);
+	}
+
+	public void Ca5() 
+	{
+		this.cat = "five";
+		this.dest = "R"+Integer.parseInt(this.instr_string.substring(6,11),2);
+	}
+
+	public void CaD()
+	{
+		//this.imm_value = Integer.parseInt(this.instr_string,2);
+		this.imm_value = (int) Long.parseLong(this.instr_string, 2);
+	}
+
+
+	public void getoperation()  
+	{
+		if (this.cat.contains("one"))
+
+		{
+			if(this.opcode.contains("000"))
+				this.operation = "J";
+			else if (this.opcode.contains("001"))
+				this.operation="BEQ";
+			else if (this.opcode.contains("010"))
+				this.operation="BNE";
+			else if (this.opcode.contains("011"))
+				this.operation="BGTZ";
+			else if (this.opcode.contains("100"))
+				this.operation="SW";
+			else if (this.opcode.contains("101"))
+				this.operation="LW";
+			else if (this.opcode.contains("110"))
+				this.operation="BREAK";
+		}
+
+		else if (this.cat.contains("two"))
+
+		{
+			if(this.opcode.contains("000"))
+				this.operation = "ADD";
+			else if (this.opcode.contains("001"))
+				this.operation="SUB";
+			else if (this.opcode.contains("010"))
+				this.operation="AND";
+			else if (this.opcode.contains("011"))
+				this.operation="OR";
+			else if (this.opcode.contains("100"))
+				this.operation="SRL";
+			else if (this.opcode.contains("101"))
+				this.operation="SRA";
+		}
+
+		else if (this.cat.contains("three"))
+
+		{
+			if(this.opcode.contains("000"))
+				this.operation = "ADDI";
+			else if (this.opcode.contains("001"))
+				this.operation="ANDI";
+			else if (this.opcode.contains("010"))
+				this.operation="ORI";
+		}
+
+		else if (this.cat.contains("four"))
+
+		{
+			if(this.opcode.contains("000"))
+				this.operation = "MULT";
+			else if (this.opcode.contains("001"))
+				this.operation="DIV";
+		}
+
+		else if (this.cat.contains("five"))
+
+		{
+			if(this.opcode.contains("000"))
+				this.operation = "MFHI";
+			else if (this.opcode.contains("001"))
+				this.operation="MFLO";
+		}		
+	}
+
+}
+
+public class MIPS
+{
+
+	public static void main(String[] args) throws UnsupportedEncodingException {
+		Map<String, Integer > data_map= new LinkedHashMap<>();
+		Map<String, Integer > register_map = new LinkedHashMap<>(); 
+		//Map<String, Integer > reg = new LinkedHashMap<>();
+
+	
+	PrintWriter writer;
+
+	try
+    {
+         writer = new PrintWriter("disassembly.txt", "UTF-8");
+            
+    
+	
+	//String Definitions
+		String C1 = "000";
+		String C2 = "001";
+		String C3 = "010";
+		String C4 = "011";
+		String C5 = "100"; 
+
+
+	//Global Variables 
+		int PC = 256;
+		List<Instruction> all_lines = new ArrayList<Instruction>();
+		List<Instruction> instruction_array = new ArrayList<Instruction>();
+		List<Instruction> data_array = new ArrayList<Instruction>();
+		List<String> previousLine = new ArrayList<>();
+		boolean break_reached =  false;
+		int HI =0 ;
+		int LO=0;
+
+
+
+	Scanner scanner;	
+
+	File instr_file = new File("inputfilename.txt");
+	try {
+	scanner = new Scanner(instr_file);
+	
+
+		
+
+	int count = 0;
+	while(scanner.hasNext())
+	{	
+		String current_instr = scanner.nextLine();
+		all_lines.add(new Instruction(current_instr,PC));
+		PC=PC + 4;
+	}
+	scanner.close();
+} 
+	 catch (FileNotFoundException ex)  
+    {
+        // insert code to run when exception occurs
+    }
+
+	//the 26 bit instruction index is shifted left by two bits 
+	//(padded with 00 at LSB side) and then the leftmost (MSB side) 
+	//four bits of the address of the next instruction are used to
+	// form the four bits (MSB side) of the target address. 
+
+	//To retreive the next instrustion just search for the next PC 
+
+	for(Instruction ins : all_lines) 
+	{
+		if (break_reached)
+           {
+           		ins.CaD();
+           		data_map.put(Integer.toString(ins.program_counter), ins.imm_value);
+        	   writer.println(ins.instr_string + "		"+ ins.program_counter+ " "+ ins.imm_value);
+        	   
+           }
+           else 
+           {
+
+               if (ins.instr_string.substring(0,3).contains(C1))
+                {
+            	//To handle Cat1 things. 
+               	ins.Ca1();
+               	ins.getoperation();
+               	ins.Ca1();
+               	
+               	//System.out.print(ins.instr_string + "		" + ins.program_counter + "		"+ ins.operation + " ");
+	               	if (ins.operation.contains("J"))
+	               	{
+	               		int next_i = (ins.program_counter - 256)/4 + 1;
+	               		Instruction next = all_lines.get(next_i);
+	               		String app = Integer.toString(next.program_counter,2);
+	               		//app=extend(app);
+	               		
+
+	               		char[] V = new char[32];
+	               		for (int i =0; i< V.length; i++)
+	               			V[i] = '0';
+
+	               		int l = app.length();
+
+						char[] v_ar = app.toCharArray();
+
+						char[] test = new char[32];
+						for (int i =0; i< test.length; i++)
+							test[i] = '0';
+
+						for(int i =31, j =l-1; j >= 0; i--,j--)
+							test[i]=v_ar[j];
+						String T = String.valueOf(test);
+
+						//System.out.println("app" +T);
+
+	               		V[0] =T.charAt(0); 
+	               		V[1] =T.charAt(1);
+	               		V[2] =T.charAt(2);
+	               		V[3] =T.charAt(3);
+
+	               		String imm_to_string = Integer.toString(ins.imm_value,2);
+	               		//System.out.println(imm_to_string);
+	               		for(int i= 31, j=imm_to_string.length() -1; j>=0; i--,j--)
+	               		{
+	               			V[i] = imm_to_string.charAt(j);
+	               		}
+	               		String v = String.valueOf(V);
+	               		ins.target = Integer.parseInt(v,2);
+
+	               		writer.println(ins.instr_string + "		" + ins.program_counter + "		"+ ins.operation + " " + ins.target);
+	               		//writer.println(ins.instr_string + "		" + ins.program_counter + "		"+ ins.operation + " " + ins.target);
+	               	}
+	               	else if (ins.operation.contains("BEQ"))
+	               	{
+	               		//the 16 bit offset is shifted left by two bits to form 18 bit signed offset that
+						//is added with the address of the next instruction to form the target address.
+
+						int next_i = ins.program_counter + 4;
+						int T = ins.imm_value +next_i;
+						ins.target = T;
+
+						writer.println(ins.instr_string+"		"+ins.program_counter+"		"+ins.operation+" " +ins.source1 + ", "+ ins.source2 + ", #" + ins.imm_value);
+						//writer.println()
+	               	}
+	               	else if (ins.operation.contains("BNE"))
+	               	{
+
+	               		int next_i = ins.program_counter + 4;
+						int T = ins.imm_value +next_i;
+						ins.target = T;
+
+						writer.println(ins.instr_string+"		"+ins.program_counter+"		"+ins.operation+" " +ins.source1 + ", "+ ins.source2 + ", #" + ins.imm_value);
+
+	               	}
+	               	else if (ins.operation.contains("BGTZ"))
+	               	{
+	               		int next_i = ins.program_counter + 4;
+						int T = ins.imm_value +next_i;
+						ins.target = T;
+
+						writer.println(ins.instr_string+"		"+ins.program_counter+"		"+ins.operation+" " +ins.source1 + ", #" + ins.imm_value);
+
+
+	               	}
+	               	else if (ins.operation.contains("SW"))
+	               	{
+	               		writer.println(ins.instr_string+"		"+ins.program_counter+"		"+ins.operation+" " +ins.source2 + ", "+ ins.imm_value + "(" + ins.source1+")");
+
+	               	}
+	               	else if (ins.operation.contains("LW"))
+	               	{
+	               		writer.println(ins.instr_string+"		"+ins.program_counter+"		"+ins.operation+" " +ins.source2 + ", "+ ins.imm_value + "(" + ins.source1+")");
+
+	               	}
+
+
+	               	else if (ins.operation.contains("BREAK")) 
+               		{
+               			writer.println(ins.instr_string+"		"+ins.program_counter+"		"+ins.operation);
+               		break_reached = true;
+               		}
+           		}
+
+           		else if(ins.instr_string.substring(0,3).contains(C2))
+           		{
+           			ins.Ca2();
+   					ins.getoperation();
+   					writer.println(ins.instr_string + "		" + ins.program_counter + "		"+ ins.operation + " "
+   					+ ins.dest + ", "+ ins.source1 + ", " + ins.source2);
+           		}
+
+           		else if (ins.instr_string.substring(0,3).contains(C3))
+                {
+   				ins.Ca3();
+   				ins.getoperation();
+   				writer.println(ins.instr_string + "		" + ins.program_counter + "		"+ ins.operation + " "
+   					+ ins.dest + ", "+ ins.source1 + ", " + ins.imm_value);
+                }
+
+               else if (ins.instr_string.substring(0,3).contains(C4))
+               {
+   				ins.Ca4();
+   				ins.getoperation();
+   				writer.println(ins.instr_string + "		" + ins.program_counter + "		"+ ins.operation + " "
+   					+ ins.source1 + ", " + ins.source2);
+                } 
+
+               else if (ins.instr_string.substring(0,3).contains(C5))
+               {
+   				ins.Ca5();
+   				ins.getoperation();
+   				writer.println(ins.instr_string + "		" + ins.program_counter + "		"+ ins.operation + " "
+   					+ ins.dest);
+               }      
+           	}
+    }
+
+    for(int i=0; i < 32 ; i++){
+    	String rg = "R" + Integer.toString(i);
+    	register_map.put(rg,0);
+    }
+/*
+    System.out.print("Registers:");
+			int j=0;
+			for (String key : register_map.keySet()) {
+    			System.out.print("<"+key + "," + register_map.get(key)+">");
+    			j++;
+    			if (j!=8)
+    				System.out.print(",");
+			}
+			j=0;
+*/
+    break_reached=false;
+        int current = 0;
+        int c_num = 1;  
+        while(break_reached == false)
+        {
+        	Instruction current_instr = all_lines.get(current);
+
+        	if(current_instr.operation.contains("J"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.imm_value);
+        		//Get both reg
+        		c_num++;
+
+
+        		int target_index = -1; 
+        		for(int i =0; i< all_lines.size(); i++)
+        		{
+        			if(all_lines.get(i).program_counter==current_instr.imm_value)
+        				current = i;
+        		}
+
+        		System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+
+        		break_reached = true;	
+        	}
+
+        	else if(current_instr.operation.contains("BEQ") && current_instr.cat.contains("one"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " " + current_instr.source1 + " " + current_instr.source2 +" "+ current_instr.imm_value);
+        		//No you need to change the current to the right index in the list 
+        		int s1= register_map.get(current_instr.source1);
+        		int s2 = register_map.get(current_instr.source2);
+
+        		c_num++;
+        		if(s1==s2)
+        		{
+        		int tt = (current_instr.target-256)/4;
+        		current = tt;
+        		}
+        		else 
+        			current++;
+
+
+        		System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+        		
+        	}
+
+        	else if(current_instr.operation.contains("BNE"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " " + current_instr.source1 + " " + current_instr.source2 +" "+ current_instr.imm_value);
+        		//No you need to change the current to the right index in the list 
+        		int s1= register_map.get(current_instr.source1);
+        		int s2 = register_map.get(current_instr.source2);
+        		c_num++;
+        		if(s1!=s2)
+        		{
+        		int tt = (current_instr.target-256)/4;
+        		current = tt;
+        		}
+        		else 
+        			current++;
+
+        		System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+
+
+        	}
+
+        	else if(current_instr.operation.contains("BGTZ"))
+        	{
+        		
+
+        		System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+        	}
+
+        	else if(current_instr.operation.contains("SW"))
+        	{
+        		
+
+        		System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+        	}
+
+        	else if(current_instr.operation.contains("LW"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.source2 + " " + current_instr.imm_value+"("+current_instr.source1+")");
+        		System.out.println(register_map.get(current_instr.source1));
+        		int s1= current_instr.imm_value + register_map.get(current_instr.source1);
+        		String g= Integer.toString(s1);
+        		System.out.println(g);
+        		c_num++;
+        		int new_v = data_map.get(g);
+        		register_map.put(current_instr.source2, new_v);
+
+        		current++;
+        	}
+
+
+        	else if(current_instr.operation.contains("ADD") && current_instr.cat.contains("two"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.dest + " "+ current_instr.source1 + " " + current_instr.source2);
+        		//Get both reg
+        		c_num++;
+        		int s1= register_map.get(current_instr.source1);
+        		int s2 = register_map.get(current_instr.source2);
+        		
+        		register_map.put(current_instr.dest, s1+s2);
+        		//break_reached=true;
+        		int j=0;
+        		/*
+        		
+			for (String key : register_map.keySet()) 
+			{
+    			System.out.print("<"+key + "," + register_map.get(key)+">");
+    			j++;
+    			if (j!=8)
+    				System.out.print(",");
+			}*/
+
+			System.out.print("Registers:");
+
+				j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+
+			j=0;
+			current++;
+        	}
+
+        	else if(current_instr.operation.contains("SUB")&& current_instr.cat.contains("two"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.dest + " "+ current_instr.source1 + " " + current_instr.source2);
+        		//Get both reg
+        		c_num++;
+        		int s1= register_map.get(current_instr.source1);
+        		int s2 = register_map.get(current_instr.source2);
+        		
+        		register_map.put(current_instr.dest, s1-s2);
+
+
+        		System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+
+        		current++;
+        	}
+
+        	else if(current_instr.operation.contains("AND") && current_instr.cat.contains("two"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.dest + " "+ current_instr.source1 + " " + current_instr.source2);
+        		//Get both reg
+        		c_num++;
+        		int s1= register_map.get(current_instr.source1);
+        		int s2 = register_map.get(current_instr.source2);
+        		
+        		register_map.put(current_instr.dest, s1&s2);
+
+
+        		System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+        		current++;
+        	}
+
+        	else if(current_instr.operation.contains("OR") && current_instr.cat.contains("two"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.dest + " "+ current_instr.source1 + " " + current_instr.source2);
+        		//Get both reg
+        		c_num++;
+        		int s1= register_map.get(current_instr.source1);
+        		int s2 = register_map.get(current_instr.source2);
+        		
+        		register_map.put(current_instr.dest, s1|s2);
+
+        		System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}	
+        		current++;
+        	}
+        	else if(current_instr.operation.contains("ADDI") && current_instr.cat.contains("three"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.dest + " "+ current_instr.source1 + " " + current_instr.imm_value);
+        		int s1= register_map.get(current_instr.source1);
+        		c_num++;
+        		register_map.put(current_instr.dest, s1+current_instr.imm_value);
+
+        		System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+        		current++;
+        	}
+
+        	else if(current_instr.operation.contains("ANDI")  && current_instr.cat.contains("three"))
+        	{
+        		//System.out.println("HEYY");
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.dest + " "+ current_instr.source1 + " " + current_instr.imm_value);
+        		int s1= register_map.get(current_instr.source1);
+
+        		c_num++;
+        		register_map.put(current_instr.dest, s1&current_instr.imm_value);
+
+        		System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+        		current++;
+        	}
+
+        	else if(current_instr.operation.contains("ORI")  && current_instr.cat.contains("three"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.dest + " "+ current_instr.source1 + " " + current_instr.imm_value);
+        		int s1= register_map.get(current_instr.source1);
+        		c_num++;
+
+        		register_map.put(current_instr.dest, s1|current_instr.imm_value);
+
+        		System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+
+        		current++;
+        	}
+
+        	else if(current_instr.operation.contains("MULT")  && current_instr.cat.contains("four"))
+        	{
+
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.source1 +  " "+ current_instr.source2);
+
+        		char[] V = new char[64];
+        		char[] V2 = new char[64];
+	            for (int i =0; i< V.length; i++) {
+	               			V[i] = '0';
+	               			V2[i]='1';
+	            }
+	            int s1 = register_map.get(current_instr.source1);
+	            int s2 = register_map.get(current_instr.source2);
+	            int r = s1*s2;
+	            String result = Integer.toString(s1*s2,2);
+	            System.out.println("result" + result);
+
+	            if (r<0)
+	            {
+	            	for(int i =61, j =result.length()-1; j >= 0; i--,j--){
+						//System.out.println(result.charAt(j));
+						V2[i]=result.charAt(j);
+						//System.out.println(V2[i]);
+
+						if (V2[i]=='-')
+							V2[i]='1';
+					}
+
+					String vv = String.valueOf(V2);
+					//System.out.println(vv);
+					HI = (int) Long.parseLong(vv.substring(0,32),2);
+					LO = (int) Long.parseLong(vv.substring(32,64),2);
+
+	            }
+
+	            if(r>=0){
+	            for(int i =61, j =result.length()-1; j >= 0; i--,j--)
+					V[i]=result.charAt(j);
+				String vv = String.valueOf(V);
+				HI = (int) Long.parseLong(vv.substring(0,32),2);
+				LO = (int) Long.parseLong(vv.substring(32,64),2);
+				}
+				
+
+
+				//System.out.println(HI);
+				//System.out.println(LO);
+
+				System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+
+				current++; 
+
+        	}
+
+        	else if(current_instr.operation.contains("DIV")  && current_instr.cat.contains("four"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.source1 +  " "+ current_instr.source2);
+        		c_num++;
+
+        		char[] V = new char[64];
+        		char[] V2 = new char[64];
+	            for (int i =0; i< V.length; i++) {
+	               			V[i] = '0';
+	               			V2[i]='1';
+	            }
+	            int s1 = register_map.get(current_instr.source1);
+	            int s2 = register_map.get(current_instr.source2);
+	            int r = s1/s2;
+	            String result = Integer.toString(s1/s2,2);
+	            System.out.println("result" + result);
+
+	            if (r<0)
+	            {
+	            	for(int i =61, j =result.length()-1; j >= 0; i--,j--){
+						//System.out.println(result.charAt(j));
+						V2[i]=result.charAt(j);
+						//System.out.println(V2[i]);
+
+						if (V2[i]=='-')
+							V2[i]='1';
+					}
+
+					String vv = String.valueOf(V2);
+					//System.out.println(vv);
+					HI = (int) Long.parseLong(vv.substring(0,32),2);
+					LO = (int) Long.parseLong(vv.substring(32,64),2);
+
+	            }
+
+	            if(r>=0){
+	            for(int i =61, j =result.length()-1; j >= 0; i--,j--)
+					V[i]=result.charAt(j);
+				String vv = String.valueOf(V);
+				HI = (int) Long.parseLong(vv.substring(0,32),2);
+				LO = (int) Long.parseLong(vv.substring(32,64),2);
+				}
+				
+
+
+
+        		System.out.print("Registers:");
+
+				int j=0;
+				for (String key : register_map.keySet()) {
+					if(j==0)
+					System.out.print("R00:");
+					if(j==8){
+					System.out.println();
+					System.out.print("R08:");
+					}
+					if(j==16){
+					System.out.println();
+					System.out.print("R16:");
+					}
+					if(j==24) {
+					System.out.println();
+					System.out.print("R24:");
+					}
+
+    				System.out.print(register_map.get(key)+" ");
+    				j++;
+    				
+				}
+				j=0;
+
+				System.out.println();
+				System.out.print("DATA:");
+				for (String key : data_map.keySet()) {
+    				System.out.print("R00"+key+ "," +data_map.get(key)+">");
+    				j++;
+    				if (j!=8)
+    					System.out.print(",");
+				}
+				current++;
+        	}
+        	else if(current_instr.operation.contains("MFHI")  && current_instr.cat.contains("four"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.dest);
+        		c_num++;
+        		register_map.put(current_instr.dest, HI);
+
+        	}
+
+        	else if(current_instr.operation.contains("MFLO")  && current_instr.cat.contains("four"))
+        	{
+        		System.out.println("Cycle " + c_num+ "	"+ current_instr.program_counter + "	" + current_instr.operation + " "+ current_instr.dest);
+        		c_num++;
+        		register_map.put(current_instr.dest, LO);
+
+        	}	
+
+        	writer.close();
+        }
+        }
+    catch (FileNotFoundException ex)  
+    {
+        // insert code to run when exception occurs
+    }
+
+  }
+
+}
