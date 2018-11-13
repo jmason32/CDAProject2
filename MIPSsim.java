@@ -233,11 +233,11 @@ class MIPSsim {
 	    	this.program_counter = program_counter;
 	    }
 
-	    public iOne(){
+	    public void iOne(){
 
 	    }
 
-	    public iTwo(Operation op,String dest, String source1, String source2){
+	    public void iTwo(Operation op,String dest, String source1, String source2){
 	    	this.op = op;
 	    	this.dest = dest;
 	    	this.source1 = source1;
@@ -295,11 +295,12 @@ class MIPSsim {
 			String cat_string = current.substring(0,3);
 
 			switch(cat_string){
-				case C1:
-
+				case "000":
+					System.out.println(current);
 					break;
 
 				case C2:
+					System.out.println(current);
 					case add: 
 						//This is an ADD instruction
 						//Instuction needs Cat,binary,PC,OP,D,S1,S2....
@@ -316,14 +317,17 @@ class MIPSsim {
 					break;
 
 				case C3:
+					System.out.println(current);
 
 					break;
 
 				case C4:
+					System.out.println(current);
 
 					break;
 
 				case C5:
+					System.out.println(current);
 
 					break;
 			}
